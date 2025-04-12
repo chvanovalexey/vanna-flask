@@ -551,7 +551,7 @@ function qr(r) {
         (n = E("nav")),
         (t = E("div")),
         (t.innerHTML =
-          '<img class="w-28 h-auto" src="https://img.vanna.ai/vanna-flask.svg" alt="Vanna Logo"/> <div class="lg:hidden"><button type="button" class="w-8 h-8 inline-flex justify-center items-center gap-2 rounded-md text-gray-700 align-middle focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white focus:ring-blue-600 transition-all dark:text-gray-400 dark:focus:ring-offset-gray-800" data-hs-overlay="#application-sidebar" aria-controls="application-sidebar" aria-label="Toggle navigation"><svg class="w-4 h-4" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854Z"></path></svg> <span class="sr-only">Sidebar</span></button></div>'),
+          '<img class="w-28 h-auto" src="https://static.tildacdn.com/tild3666-3462-4766-b765-643363363731/_.svg" alt="Vanna Logo"/> <div class="lg:hidden"><button type="button" class="w-8 h-8 inline-flex justify-center items-center gap-2 rounded-md text-gray-700 align-middle focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white focus:ring-blue-600 transition-all dark:text-gray-400 dark:focus:ring-offset-gray-800" data-hs-overlay="#application-sidebar" aria-controls="application-sidebar" aria-label="Toggle navigation"><svg class="w-4 h-4" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854Z"></path></svg> <span class="sr-only">Sidebar</span></button></div>'),
         (o = Z()),
         (i = E("div")),
         (s = E("ul")),
@@ -4885,7 +4885,7 @@ function Jr(r) {
         (o = Z()),
         (i = E("div")),
         c && c.c(),
-        or(n.src, (t = "/vanna.svg")) || v(n, "src", t),
+        or(n.src, (t = "/glowbyte_ico.svg")) || v(n, "src", t),
         v(n, "class", "flex-shrink-0 w-[2.375rem] h-[2.375rem] "),
         v(n, "alt", "agent logo"),
         v(i, "class", "space-y-3 overflow-x-auto overflow-y-hidden"),
@@ -4956,7 +4956,7 @@ function eo(r) {
           (o = Z()),
           (i = E("div")),
           J(s.$$.fragment),
-          or(n.src, (t = "/vanna.svg")) || v(n, "src", t),
+          or(n.src, (t = "/glowbyte_ico.svg")) || v(n, "src", t),
           v(
             n,
             "class",
