@@ -1,0 +1,7 @@
+# Бизнес-термин: избыточный запас
+
+Определение: Запас товара выше максимального рекомендуемого уровня
+
+SQL-представление: ```inventory.quantity > inventory.max_stock_level```
+
+Связанные колонки: inventory.quantity, inventory.max_stock_level

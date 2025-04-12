@@ -1,0 +1,7 @@
+# Бизнес-термин: промо-эффективность
+
+Определение: Отношение выручки во время акции к обычной выручке
+
+SQL-представление: ```SUM(CASE WHEN sales.promo_id IS NOT NULL THEN sales.total_amount ELSE 0 END) / SUM(CASE WHEN sales.promo_id IS NULL THEN sales.total_amount ELSE 0 END)```
+
+Связанные колонки: sales.promo_id, sales.total_amount

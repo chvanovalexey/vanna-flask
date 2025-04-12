@@ -1,0 +1,7 @@
+# Бизнес-термин: критический запас
+
+Определение: Запас товара ниже минимального допустимого уровня
+
+SQL-представление: ```inventory.quantity < inventory.min_stock_level```
+
+Связанные колонки: inventory.quantity, inventory.min_stock_level

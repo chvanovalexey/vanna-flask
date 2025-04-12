@@ -1,0 +1,3 @@
+-- Запрос: Как изменилась средняя маржа по категориям товаров за последние 3 месяца?
+
+WITH monthly_margin AS (SELECT c.category_name, date_trunc('month', s.sale_date) as month, (SUM((s.unit_price - p.unit_cost) * s.quantity) / SUM(s.total_amount)) * 100 as margin_percentage FROM sales s JOIN products p ON s.product_id = p.product_id JOIN categories c ON p.category_id = c.category_id WHERE s.sale_date >= CURRENT_DATE - INTERVAL '3 months' GROUP BY c.category_name, date_trunc('month', s.sale_date)) SELECT category_name, month, margin_percentage, margin_percentage - LAG(margin_percentage) OVER (PARTITION BY category_name ORDER BY month) as margin_change FROM monthly_margin ORDER BY category_name, month;

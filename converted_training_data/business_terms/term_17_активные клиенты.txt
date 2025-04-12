@@ -1,0 +1,7 @@
+# Бизнес-термин: активные клиенты
+
+Определение: Клиенты, совершившие хотя бы одну покупку за последний месяц
+
+SQL-представление: ```customers.customer_id IN (SELECT DISTINCT customer_id FROM sales WHERE sales.sale_date >= DATE_SUB(CURRENT_DATE, INTERVAL 1 MONTH))```
+
+Связанные колонки: customers.customer_id, sales.customer_id, sales.sale_date

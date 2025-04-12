@@ -1,0 +1,7 @@
+# Бизнес-термин: оборачиваемость
+
+Определение: Скорость продажи товаров за определенный период
+
+SQL-представление: ```SUM(sales.quantity) / AVG(inventory.quantity)```
+
+Связанные колонки: sales.quantity, inventory.quantity

@@ -1,0 +1,7 @@
+# Бизнес-термин: маржа
+
+Определение: Разница между ценой продажи и себестоимостью, выраженная в процентах
+
+SQL-представление: ```(SUM((s.unit_price - p.unit_cost) * s.quantity) / SUM(s.total_amount)) * 100```
+
+Связанные колонки: sales.unit_price, products.unit_cost, sales.quantity, sales.total_amount

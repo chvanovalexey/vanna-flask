@@ -1,0 +1,7 @@
+# Бизнес-термин: прибыль
+
+Определение: Разница между выручкой и себестоимостью проданных товаров
+
+SQL-представление: ```SUM((s.unit_price - p.unit_cost) * s.quantity)```
+
+Связанные колонки: sales.unit_price, products.unit_cost, sales.quantity

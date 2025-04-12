@@ -5,6 +5,8 @@ from functools import wraps
 from flask import Flask, jsonify, Response, request, redirect, url_for
 import flask
 import os
+import duckdb
+import time
 from cache import MemoryCache
 
 app = Flask(__name__, static_url_path='')
@@ -12,19 +14,36 @@ app = Flask(__name__, static_url_path='')
 # SETUP
 cache = MemoryCache()
 
-# from vanna.local import LocalContext_OpenAI
-# vn = LocalContext_OpenAI()
+# Setup Vanna with OpenAI and ChromaDB
+from vanna.openai import OpenAI_Chat
+from vanna.chromadb import ChromaDB_VectorStore
 
-from vanna.remote import VannaDefault
-vn = VannaDefault(model=os.environ['VANNA_MODEL'], api_key=os.environ['VANNA_API_KEY'])
+class MyVanna(ChromaDB_VectorStore, OpenAI_Chat):
+    def __init__(self, config=None):
+        ChromaDB_VectorStore.__init__(self, config=config)
+        OpenAI_Chat.__init__(self, config=config)
 
-vn.connect_to_snowflake(
-    account=os.environ['SNOWFLAKE_ACCOUNT'],
-    username=os.environ['SNOWFLAKE_USERNAME'],
-    password=os.environ['SNOWFLAKE_PASSWORD'],
-    database=os.environ['SNOWFLAKE_DATABASE'],
-    warehouse=os.environ['SNOWFLAKE_WAREHOUSE'],
-)
+vn = MyVanna(config={
+    'api_key': os.environ['OPENAI_API_KEY'],
+    'model': os.environ['OPENAI_MODEL'],
+    'temperature': float(os.environ['OPENAI_TEMPERATURE']),
+    'max_tokens': int(os.environ['OPENAI_MAX_TOKENS'])
+})
+
+# Connect to DuckDB
+try:
+    db_path = 'data/retail_data.db'
+    vn.connect_to_duckdb(url=db_path, read_only=True)
+    print(f"Successfully connected to DuckDB at {db_path} in read-only mode")
+except Exception as e:
+    print(f"Error connecting to DuckDB in read-only mode: {str(e)}")
+    # If we can't connect even in read-only mode, we have a more serious problem
+    # Try one more time with normal mode as a fallback
+    try:
+        vn.connect_to_duckdb(url=db_path)
+        print(f"Successfully connected to DuckDB in normal mode")
+    except Exception as e:
+        print(f"Failed to connect to DuckDB: {str(e)}")
 
 # NO NEED TO CHANGE ANYTHING BELOW THIS LINE
 def requires_cache(fields):

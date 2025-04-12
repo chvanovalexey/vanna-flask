@@ -1,0 +1,7 @@
+# Бизнес-термин: коэффициент эластичности
+
+Определение: Мера чувствительности спроса к изменению цены, показывающая процентное изменение в объеме продаж при изменении цены на 1%
+
+SQL-представление: ```((current_qty - previous_qty) / previous_qty) / ((current_price - previous_price) / previous_price)```
+
+Связанные колонки: sales.quantity, sales.unit_price, sales.sale_date

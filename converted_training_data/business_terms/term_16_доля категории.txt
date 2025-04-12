@@ -1,0 +1,7 @@
+# Бизнес-термин: доля категории
+
+Определение: Процент выручки, приходящийся на определенную категорию товаров
+
+SQL-представление: ```(SUM(CASE WHEN products.category_id = X THEN sales.total_amount ELSE 0 END) / SUM(sales.total_amount)) * 100```
+
+Связанные колонки: products.category_id, sales.total_amount

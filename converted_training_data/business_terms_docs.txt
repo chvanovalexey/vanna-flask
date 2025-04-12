@@ -1,0 +1,97 @@
+# Словарь бизнес-терминов для системы аналитики розничной торговли
+
+## Бизнес-термин: выручка
+Определение: Общая сумма денег, полученных от продажи товаров
+SQL-представление: SUM(total_amount)
+Связанные колонки: sales.total_amount
+
+## Бизнес-термин: прибыль
+Определение: Разница между выручкой и себестоимостью проданных товаров
+SQL-представление: SUM((s.unit_price - p.unit_cost) * s.quantity)
+Связанные колонки: sales.unit_price, products.unit_cost, sales.quantity
+
+## Бизнес-термин: маржа
+Определение: Разница между ценой продажи и себестоимостью, выраженная в процентах
+SQL-представление: (SUM((s.unit_price - p.unit_cost) * s.quantity) / SUM(s.total_amount)) * 100
+Связанные колонки: sales.unit_price, products.unit_cost, sales.quantity, sales.total_amount
+
+## Бизнес-термин: продажи
+Определение: Количество проданных единиц товара
+SQL-представление: SUM(quantity)
+Связанные колонки: sales.quantity
+
+## Бизнес-термин: средний чек
+Определение: Средняя сумма, которую тратит покупатель за одну транзакцию
+SQL-представление: AVG(total_amount)
+Связанные колонки: sales.total_amount
+
+## Бизнес-термин: средняя цена
+Определение: Средняя цена продажи товара
+SQL-представление: AVG(unit_price)
+Связанные колонки: sales.unit_price, products.unit_price
+
+## Бизнес-термин: запас
+Определение: Количество товара, доступного на складе
+SQL-представление: quantity
+Связанные колонки: inventory.quantity
+
+## Бизнес-термин: собственная торговая марка
+Определение: Товары, производимые под брендом торговой сети
+SQL-представление: is_private_label = TRUE
+Связанные колонки: products.is_private_label
+
+## Бизнес-термин: критический запас
+Определение: Запас товара ниже минимального допустимого уровня
+SQL-представление: inventory.quantity < inventory.min_stock_level
+Связанные колонки: inventory.quantity, inventory.min_stock_level
+
+## Бизнес-термин: избыточный запас
+Определение: Запас товара выше максимального рекомендуемого уровня
+SQL-представление: inventory.quantity > inventory.max_stock_level
+Связанные колонки: inventory.quantity, inventory.max_stock_level
+
+## Бизнес-термин: оборачиваемость
+Определение: Скорость продажи товаров за определенный период
+SQL-представление: SUM(sales.quantity) / AVG(inventory.quantity)
+Связанные колонки: sales.quantity, inventory.quantity
+
+## Бизнес-термин: дневные продажи
+Определение: Количество продаж, совершенных за один день
+SQL-представление: COUNT(*)
+Связанные колонки: sales.sale_id, sales.sale_date
+
+## Бизнес-термин: уровень лояльности
+Определение: Статус клиента в программе лояльности
+SQL-представление: loyalty_level
+Связанные колонки: customers.loyalty_level
+
+## Бизнес-термин: промо-эффективность
+Определение: Отношение выручки во время акции к обычной выручке
+SQL-представление: SUM(CASE WHEN sales.promo_id IS NOT NULL THEN sales.total_amount ELSE 0 END) / SUM(CASE WHEN sales.promo_id IS NULL THEN sales.total_amount ELSE 0 END)
+Связанные колонки: sales.promo_id, sales.total_amount
+
+## Бизнес-термин: доля промо-продаж
+Определение: Процент продаж, осуществленных по акциям
+SQL-представление: (COUNT(CASE WHEN sales.promo_id IS NOT NULL THEN 1 END) / COUNT(*)) * 100
+Связанные колонки: sales.promo_id
+
+## Бизнес-термин: доля категории
+Определение: Процент выручки, приходящийся на определенную категорию товаров
+SQL-представление: (SUM(CASE WHEN products.category_id = X THEN sales.total_amount ELSE 0 END) / SUM(sales.total_amount)) * 100
+Связанные колонки: products.category_id, sales.total_amount
+
+## Бизнес-термин: активные клиенты
+Определение: Клиенты, совершившие хотя бы одну покупку за последний месяц
+SQL-представление: customers.customer_id IN (SELECT DISTINCT customer_id FROM sales WHERE sales.sale_date >= DATE_SUB(CURRENT_DATE, INTERVAL 1 MONTH))
+Связанные колонки: customers.customer_id, sales.customer_id, sales.sale_date
+
+## Бизнес-термин: средний возраст клиентов
+Определение: Средний возраст клиентов, совершающих покупки
+SQL-представление: AVG(DATEDIFF(CURRENT_DATE, customers.birth_date) / 365)
+Связанные колонки: customers.birth_date
+
+## Бизнес-термин: коэффициент эластичности
+Определение: Мера чувствительности спроса к изменению цены, показывающая процентное изменение в объеме продаж при изменении цены на 1%
+SQL-представление: ((current_qty - previous_qty) / previous_qty) / ((current_price - previous_price) / previous_price)
+Связанные колонки: sales.quantity, sales.unit_price, sales.sale_date
+

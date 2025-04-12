@@ -1,0 +1,189 @@
+{
+  "tables": [
+    {
+      "name": "stores",
+      "description": "Информация о магазинах",
+      "columns": [
+        {"name": "store_id", "type": "INTEGER", "description": "Уникальный идентификатор магазина", "alias": "ИД магазина"},
+        {"name": "store_name", "type": "TEXT", "description": "Название магазина", "alias": "Название магазина"},
+        {"name": "format", "type": "TEXT", "description": "Формат магазина", "alias": "Формат"},
+        {"name": "region", "type": "TEXT", "description": "Регион расположения", "alias": "Регион"},
+        {"name": "city", "type": "TEXT", "description": "Город", "alias": "Город"},
+        {"name": "open_date", "type": "DATE", "description": "Дата открытия", "format": "%d.%m.%Y", "alias": "Дата открытия"},
+        {"name": "size_sqm", "type": "FLOAT", "description": "Площадь магазина в квадратных метрах", "format": "numeric", "unit": "кв.м.", "alias": "Площадь"},
+        {"name": "is_active", "type": "BOOLEAN", "description": "Активен ли магазин", "alias": "Активен"}
+      ]
+    },
+    {
+      "name": "products",
+      "description": "Информация о товарах",
+      "columns": [
+        {"name": "product_id", "type": "INTEGER", "description": "Уникальный идентификатор товара", "alias": "ИД товара"},
+        {"name": "product_name", "type": "TEXT", "description": "Наименование товара", "alias": "Название товара"},
+        {"name": "category_id", "type": "INTEGER", "description": "Идентификатор категории", "alias": "ИД категории"},
+        {"name": "subcategory_id", "type": "INTEGER", "description": "Идентификатор подкатегории", "alias": "ИД подкатегории"},
+        {"name": "brand", "type": "TEXT", "description": "Бренд", "alias": "Бренд"},
+        {"name": "supplier_id", "type": "INTEGER", "description": "Идентификатор поставщика", "alias": "ИД поставщика"},
+        {"name": "unit_price", "type": "FLOAT", "description": "Базовая цена за единицу", "format": "currency", "unit": "₽", "alias": "Базовая цена"},
+        {"name": "unit_cost", "type": "FLOAT", "description": "Себестоимость единицы", "format": "currency", "unit": "₽", "alias": "Себестоимость"},
+        {"name": "unit_type", "type": "TEXT", "description": "Единица измерения (кг, шт, л)", "alias": "Ед. измерения"},
+        {"name": "is_private_label", "type": "BOOLEAN", "description": "Является ли собственной торговой маркой", "alias": "Собственная марка"}
+      ]
+    },
+    {
+      "name": "categories",
+      "description": "Категории товаров",
+      "columns": [
+        {"name": "category_id", "type": "INTEGER", "description": "Уникальный идентификатор категории", "alias": "ИД категории"},
+        {"name": "category_name", "type": "TEXT", "description": "Название категории", "alias": "Название категории"},
+        {"name": "department", "type": "TEXT", "description": "Отдел", "alias": "Отдел"}
+      ]
+    },
+    {
+      "name": "subcategories",
+      "description": "Подкатегории товаров",
+      "columns": [
+        {"name": "subcategory_id", "type": "INTEGER", "description": "Уникальный идентификатор подкатегории", "alias": "ИД подкатегории"},
+        {"name": "category_id", "type": "INTEGER", "description": "Идентификатор родительской категории", "alias": "ИД категории"},
+        {"name": "subcategory_name", "type": "TEXT", "description": "Название подкатегории", "alias": "Название подкатегории"}
+      ]
+    },
+    {
+      "name": "sales",
+      "description": "Данные о продажах",
+      "columns": [
+        {"name": "sale_id", "type": "INTEGER", "description": "Уникальный идентификатор продажи", "alias": "ИД продажи"},
+        {"name": "store_id", "type": "INTEGER", "description": "Идентификатор магазина", "alias": "ИД магазина"},
+        {"name": "product_id", "type": "INTEGER", "description": "Идентификатор товара", "alias": "ИД товара"},
+        {"name": "customer_id", "type": "INTEGER", "description": "Идентификатор клиента (может быть NULL)", "alias": "ИД клиента"},
+        {"name": "sale_date", "type": "DATE", "description": "Дата продажи", "format": "%d.%m.%Y", "alias": "Дата продажи"},
+        {"name": "quantity", "type": "FLOAT", "description": "Количество проданных единиц", "format": "numeric", "alias": "Количество"},
+        {"name": "unit_price", "type": "FLOAT", "description": "Фактическая цена продажи за единицу", "format": "currency", "unit": "₽", "alias": "Цена продажи"},
+        {"name": "discount", "type": "FLOAT", "description": "Размер скидки", "format": "currency", "unit": "₽", "alias": "Скидка"},
+        {"name": "total_amount", "type": "FLOAT", "description": "Итоговая сумма продажи", "format": "currency", "unit": "₽", "alias": "Сумма продажи"},
+        {"name": "payment_type", "type": "TEXT", "description": "Тип оплаты (наличные, карта, онлайн)", "alias": "Тип оплаты"},
+        {"name": "promo_id", "type": "INTEGER", "description": "Идентификатор промо-акции (может быть NULL)", "alias": "ИД акции"}
+      ]
+    },
+    {
+      "name": "customers",
+      "description": "Информация о клиентах",
+      "columns": [
+        {"name": "customer_id", "type": "INTEGER", "description": "Уникальный идентификатор клиента", "alias": "ИД клиента"},
+        {"name": "first_name", "type": "TEXT", "description": "Имя", "alias": "Имя"},
+        {"name": "last_name", "type": "TEXT", "description": "Фамилия", "alias": "Фамилия"},
+        {"name": "email", "type": "TEXT", "description": "Электронная почта", "alias": "Email"},
+        {"name": "phone", "type": "TEXT", "description": "Телефон", "alias": "Телефон"},
+        {"name": "registration_date", "type": "DATE", "description": "Дата регистрации", "format": "%d.%m.%Y", "alias": "Дата регистрации"},
+        {"name": "loyalty_level", "type": "TEXT", "description": "Уровень лояльности", "alias": "Уровень лояльности"},
+        {"name": "city", "type": "TEXT", "description": "Город", "alias": "Город"},
+        {"name": "birth_date", "type": "DATE", "description": "Дата рождения", "format": "%d.%m.%Y", "alias": "Дата рождения"},
+        {"name": "gender", "type": "TEXT", "description": "Пол", "alias": "Пол"}
+      ]
+    },
+    {
+      "name": "suppliers",
+      "description": "Информация о поставщиках",
+      "columns": [
+        {"name": "supplier_id", "type": "INTEGER", "description": "Уникальный идентификатор поставщика", "alias": "ИД поставщика"},
+        {"name": "supplier_name", "type": "TEXT", "description": "Название поставщика", "alias": "Название поставщика"},
+        {"name": "contact_person", "type": "TEXT", "description": "Контактное лицо", "alias": "Контактное лицо"},
+        {"name": "email", "type": "TEXT", "description": "Электронная почта", "alias": "Email"},
+        {"name": "phone", "type": "TEXT", "description": "Телефон", "alias": "Телефон"},
+        {"name": "country", "type": "TEXT", "description": "Страна", "alias": "Страна"},
+        {"name": "rating", "type": "FLOAT", "description": "Рейтинг поставщика", "format": "numeric", "decimals": 1, "alias": "Рейтинг"}
+      ]
+    },
+    {
+      "name": "inventory",
+      "description": "Информация о запасах",
+      "columns": [
+        {"name": "inventory_id", "type": "INTEGER", "description": "Уникальный идентификатор записи инвентаря", "alias": "ИД записи"},
+        {"name": "store_id", "type": "INTEGER", "description": "Идентификатор магазина", "alias": "ИД магазина"},
+        {"name": "product_id", "type": "INTEGER", "description": "Идентификатор товара", "alias": "ИД товара"},
+        {"name": "quantity", "type": "FLOAT", "description": "Количество на складе", "format": "numeric", "alias": "Количество"},
+        {"name": "last_update", "type": "TIMESTAMP", "description": "Время последнего обновления", "format": "%d.%m.%Y %H:%M", "alias": "Последнее обновление"},
+        {"name": "min_stock_level", "type": "FLOAT", "description": "Минимальный уровень запаса", "format": "numeric", "alias": "Мин. запас"},
+        {"name": "max_stock_level", "type": "FLOAT", "description": "Максимальный уровень запаса", "format": "numeric", "alias": "Макс. запас"}
+      ]
+    },
+    {
+      "name": "promotions",
+      "description": "Информация о промо-акциях",
+      "columns": [
+        {"name": "promo_id", "type": "INTEGER", "description": "Уникальный идентификатор акции", "alias": "ИД акции"},
+        {"name": "promo_name", "type": "TEXT", "description": "Название акции", "alias": "Название акции"},
+        {"name": "start_date", "type": "DATE", "description": "Дата начала", "format": "%d.%m.%Y", "alias": "Дата начала"},
+        {"name": "end_date", "type": "DATE", "description": "Дата окончания", "format": "%d.%m.%Y", "alias": "Дата окончания"},
+        {"name": "promo_type", "type": "TEXT", "description": "Тип акции (скидка, 2+1, и т.д.)", "alias": "Тип акции"},
+        {"name": "discount_amount", "type": "FLOAT", "description": "Размер скидки", "format": "numeric", "decimals": 2, "alias": "Размер скидки"},
+        {"name": "min_purchase", "type": "FLOAT", "description": "Минимальная сумма покупки", "format": "currency", "unit": "₽", "alias": "Мин. сумма покупки"}
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "from": {"table": "sales", "column": "store_id"},
+      "to": {"table": "stores", "column": "store_id"},
+      "type": "many-to-one"
+    },
+    {
+      "from": {"table": "sales", "column": "product_id"},
+      "to": {"table": "products", "column": "product_id"},
+      "type": "many-to-one"
+    },
+    {
+      "from": {"table": "sales", "column": "customer_id"},
+      "to": {"table": "customers", "column": "customer_id"},
+      "type": "many-to-one"
+    },
+    {
+      "from": {"table": "sales", "column": "promo_id"},
+      "to": {"table": "promotions", "column": "promo_id"},
+      "type": "many-to-one"
+    },
+    {
+      "from": {"table": "products", "column": "category_id"},
+      "to": {"table": "categories", "column": "category_id"},
+      "type": "many-to-one"
+    },
+    {
+      "from": {"table": "products", "column": "subcategory_id"},
+      "to": {"table": "subcategories", "column": "subcategory_id"},
+      "type": "many-to-one"
+    },
+    {
+      "from": {"table": "products", "column": "supplier_id"},
+      "to": {"table": "suppliers", "column": "supplier_id"},
+      "type": "many-to-one"
+    },
+    {
+      "from": {"table": "subcategories", "column": "category_id"},
+      "to": {"table": "categories", "column": "category_id"},
+      "type": "many-to-one"
+    },
+    {
+      "from": {"table": "inventory", "column": "store_id"},
+      "to": {"table": "stores", "column": "store_id"},
+      "type": "many-to-one"
+    },
+    {
+      "from": {"table": "inventory", "column": "product_id"},
+      "to": {"table": "products", "column": "product_id"},
+      "type": "many-to-one"
+    }
+  ],
+  "formatting": {
+    "column_name_style": "capitalize_words",
+    "formats": {
+      "currency": {
+        "description": "Денежные значения",
+        "decimals": 2
+      },
+      "numeric": {
+        "description": "Числовые значения",
+        "decimals": 2
+      }
+    }
+  }
+} 
