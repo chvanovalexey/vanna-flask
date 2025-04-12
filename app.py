@@ -8,6 +8,7 @@ import os
 import duckdb
 import time
 from cache import MemoryCache
+import system_prompts  # Импортируем наш модуль с промптами
 
 app = Flask(__name__, static_url_path='')
 
@@ -22,6 +23,41 @@ class MyVanna(ChromaDB_VectorStore, OpenAI_Chat):
     def __init__(self, config=None):
         ChromaDB_VectorStore.__init__(self, config=config)
         OpenAI_Chat.__init__(self, config=config)
+    
+    def generate_sql(self, question, **kwargs):
+        """
+        Переопределяем метод generate_sql для использования наших системных промптов.
+        """
+        # Получаем релевантные данные для промпта с помощью отдельных методов
+        related_ddl = self.get_related_ddl(question, **kwargs)
+        related_docs = self.get_related_documentation(question, **kwargs)
+        related_questions = self.get_similar_question_sql(question, **kwargs)
+        
+        # Собираем все данные в структуру для формирования промпта
+        class RelatedData:
+            def __init__(self, ddl, documentation, questions):
+                self.ddl = ddl
+                self.documentation = documentation
+                self.questions = questions
+        
+        related_data = RelatedData(
+            ddl=related_ddl,
+            documentation=related_docs,
+            questions=related_questions
+        )
+        
+        # Формируем промпт с использованием нашей функции из system_prompts
+        messages = system_prompts.get_message_log_prompt(
+            question=question,
+            ddl_list=related_data.ddl,
+            doc_list=related_data.documentation,
+            question_sql_list=related_data.questions
+        )
+        
+        # Отправляем запрос к LLM
+        sql = self.submit_prompt(messages)
+        
+        return sql
 
 vn = MyVanna(config={
     'api_key': os.environ['OPENAI_API_KEY'],
@@ -156,7 +192,8 @@ def get_training_data():
     {
         "type": "df", 
         "id": "training_data",
-        "df": df.head(25).to_json(orient='records'),
+        #"df": df.head(25).to_json(orient='records'),
+        "df": df.to_json(orient='records'),
     })
 
 @app.route('/api/v0/remove_training_data', methods=['POST'])

@@ -1,5 +1,16 @@
 # Словарь бизнес-терминов для системы аналитики розничной торговли
 
+##Бизнес-термин: LFL (Like-for-Like), ЛФЛ, сравнивая сравнимое
+Определение: Метрика сравнения продаж в одинаковых магазинах за сопоставимые периоды, исключающая влияние новых или закрытых точек продажСвязанные колонки: sales.store_id, sales.sale_date, sales.total_amount, sales.quantity, stores.opening_date, stores.closing_date
+SQL-представление:
+    SUM(cp.revenue) as текущий_период_выручка,  
+    SUM(pp.revenue) as предыдущий_период_выручка,  
+    SUM(cp.units_sold) as текущий_период_количество,  
+    SUM(pp.units_sold) as предыдущий_период_количество,  
+    ROUND((SUM(cp.revenue) - SUM(pp.revenue)) / SUM(pp.revenue) * 100, 2) as lfl_рост_выручки_процент,  
+    ROUND((SUM(cp.units_sold) - SUM(pp.units_sold)) / SUM(pp.units_sold) * 100, 2) as lfl_рост_количества_процент 
+Связанные колонки: sales.store_id, sales.sale_date, sales.total_amount, sales.quantity, stores.open_date, stores.is_active
+
 ## Бизнес-термин: выручка
 Определение: Общая сумма денег, полученных от продажи товаров
 SQL-представление: SUM(total_amount)
