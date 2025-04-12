@@ -1,4 +1,4 @@
 flask
-vanna[chromadb,openai,duckdb]
+vanna[chromadb,openai,duckdb,anthropic,mistral]
 db-dtypes
 python-dotenv

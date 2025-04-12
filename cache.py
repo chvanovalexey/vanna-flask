@@ -60,3 +60,19 @@ class MemoryCache(Cache):
     def delete(self, id):
         if id in self.cache:
             del self.cache[id]
+
+    def get_question_history(self):
+        """
+        Возвращает историю вопросов из кэша.
+        
+        Returns:
+            list: Список словарей с вопросами и их идентификаторами.
+        """
+        questions = []
+        for id, fields in self.cache.items():
+            if 'question' in fields:
+                questions.append({
+                    'id': id,
+                    'question': fields['question']
+                })
+        return questions

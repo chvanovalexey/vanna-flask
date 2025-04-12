@@ -14,12 +14,45 @@ app = Flask(__name__, static_url_path='')
 
 # SETUP
 cache = MemoryCache()
+# Global variable to store current LLM provider
+current_llm_provider = 'openai'
+current_llm_model = os.environ.get('OPENAI_MODEL', 'gpt-4o-mini')
 
-# Setup Vanna with OpenAI and ChromaDB
+# Setup Vanna with different LLM providers
 from vanna.openai import OpenAI_Chat
 from vanna.chromadb import ChromaDB_VectorStore
 
-class MyVanna(ChromaDB_VectorStore, OpenAI_Chat):
+# Импортируем дополнительные LLM провайдеры
+try:
+    from vanna.anthropic import Anthropic_Chat
+except ImportError:
+    Anthropic_Chat = None
+    print("Anthropic provider not available")
+
+try:
+    from vanna.mistral import Mistral_Chat
+except ImportError:
+    Mistral_Chat = None
+    print("Mistral provider not available")
+
+# Словарь доступных моделей с их настройками
+AVAILABLE_MODELS = {
+    'openai': {
+        'gpt-4o-mini': 'GPT-4o mini',
+        'gpt-4o': 'GPT-4o',
+        'o1-preview': 'o1-preview',
+        'o3-mini': 'o3-mini'
+    },
+    'anthropic': {
+        'claude-3-7-sonnet-20250219': 'Claude 3.7 Sonnet'
+    },
+    'mistral': {
+        'codestral-2405': 'Codestral'
+    }
+}
+
+# Базовый класс для всех провайдеров LLM с дополнительной функциональностью
+class OpenAI_Vanna(ChromaDB_VectorStore, OpenAI_Chat):
     def __init__(self, config=None):
         ChromaDB_VectorStore.__init__(self, config=config)
         OpenAI_Chat.__init__(self, config=config)
@@ -28,7 +61,7 @@ class MyVanna(ChromaDB_VectorStore, OpenAI_Chat):
         """
         Переопределяем метод generate_sql для использования наших системных промптов.
         """
-        # Получаем релевантные данные для промпта с помощью отдельных методов
+        # Получаем релевантные данные для промпта
         related_ddl = self.get_related_ddl(question, **kwargs)
         related_docs = self.get_related_documentation(question, **kwargs)
         related_questions = self.get_similar_question_sql(question, **kwargs)
@@ -59,12 +92,146 @@ class MyVanna(ChromaDB_VectorStore, OpenAI_Chat):
         
         return sql
 
-vn = MyVanna(config={
-    'api_key': os.environ['OPENAI_API_KEY'],
-    'model': os.environ['OPENAI_MODEL'],
-    'temperature': float(os.environ['OPENAI_TEMPERATURE']),
-    'max_tokens': int(os.environ['OPENAI_MAX_TOKENS'])
-})
+# Класс для Anthropic, если доступен
+if Anthropic_Chat:
+    class Anthropic_Vanna(ChromaDB_VectorStore, Anthropic_Chat):
+        def __init__(self, config=None):
+            ChromaDB_VectorStore.__init__(self, config=config)
+            Anthropic_Chat.__init__(self, config=config)
+        
+        def generate_sql(self, question, **kwargs):
+            """
+            Переопределяем метод generate_sql для использования наших системных промптов.
+            """
+            # Получаем релевантные данные для промпта
+            related_ddl = self.get_related_ddl(question, **kwargs)
+            related_docs = self.get_related_documentation(question, **kwargs)
+            related_questions = self.get_similar_question_sql(question, **kwargs)
+            
+            # Собираем все данные в структуру для формирования промпта
+            class RelatedData:
+                def __init__(self, ddl, documentation, questions):
+                    self.ddl = ddl
+                    self.documentation = documentation
+                    self.questions = questions
+            
+            related_data = RelatedData(
+                ddl=related_ddl,
+                documentation=related_docs,
+                questions=related_questions
+            )
+            
+            # Формируем промпт с использованием нашей функции из system_prompts
+            messages = system_prompts.get_message_log_prompt(
+                question=question,
+                ddl_list=related_data.ddl,
+                doc_list=related_data.documentation,
+                question_sql_list=related_data.questions
+            )
+            
+            # Отправляем запрос к LLM
+            sql = self.submit_prompt(messages)
+            
+            return sql
+
+# Класс для Mistral, если доступен
+if Mistral_Chat:
+    class Mistral_Vanna(ChromaDB_VectorStore, Mistral_Chat):
+        def __init__(self, config=None):
+            ChromaDB_VectorStore.__init__(self, config=config)
+            Mistral_Chat.__init__(self, config=config)
+        
+        def generate_sql(self, question, **kwargs):
+            """
+            Переопределяем метод generate_sql для использования наших системных промптов.
+            """
+            # Получаем релевантные данные для промпта
+            related_ddl = self.get_related_ddl(question, **kwargs)
+            related_docs = self.get_related_documentation(question, **kwargs)
+            related_questions = self.get_similar_question_sql(question, **kwargs)
+            
+            # Собираем все данные в структуру для формирования промпта
+            class RelatedData:
+                def __init__(self, ddl, documentation, questions):
+                    self.ddl = ddl
+                    self.documentation = documentation
+                    self.questions = questions
+            
+            related_data = RelatedData(
+                ddl=related_ddl,
+                documentation=related_docs,
+                questions=related_questions
+            )
+            
+            # Формируем промпт с использованием нашей функции из system_prompts
+            messages = system_prompts.get_message_log_prompt(
+                question=question,
+                ddl_list=related_data.ddl,
+                doc_list=related_data.documentation,
+                question_sql_list=related_data.questions
+            )
+            
+            # Отправляем запрос к LLM
+            sql = self.submit_prompt(messages)
+            
+            return sql
+
+# Функция для создания экземпляра соответствующего класса Vanna
+def create_vanna_instance(llm_provider='openai', model=None):
+    global current_llm_provider, current_llm_model
+    
+    # Сохраняем текущие значения провайдера и модели
+    current_llm_provider = llm_provider
+    if model:
+        current_llm_model = model
+    
+    # Создаем конфигурацию в зависимости от провайдера
+    config = {}
+    
+    if llm_provider == 'openai':
+        model_name = model or os.environ.get('OPENAI_MODEL', 'gpt-4o-mini')
+        config = {
+            'api_key': os.environ['OPENAI_API_KEY'],
+            'model': model_name,
+            'temperature': float(os.environ['OPENAI_TEMPERATURE']),
+            'max_tokens': int(os.environ['OPENAI_MAX_TOKENS'])
+        }
+        return OpenAI_Vanna(config=config)
+    
+    elif llm_provider == 'anthropic' and Anthropic_Chat:
+        model_name = model or os.environ.get('ANTHROPIC_MODEL', 'claude-3-7-sonnet-20250219')
+        config = {
+            'api_key': os.environ['ANTHROPIC_API_KEY'],
+            'model': model_name,
+            'temperature': float(os.environ['ANTHROPIC_TEMPERATURE']),
+            'max_tokens': int(os.environ['ANTHROPIC_MAX_TOKENS'])
+        }
+        return Anthropic_Vanna(config=config)
+    
+    elif llm_provider == 'mistral' and Mistral_Chat:
+        model_name = model or os.environ.get('MISTRAL_MODEL', 'codestral-2405')
+        config = {
+            'api_key': os.environ['MISTRAL_API_KEY'],
+            'model': model_name,
+            'temperature': float(os.environ['MISTRAL_TEMPERATURE']),
+            'max_tokens': int(os.environ['MISTRAL_MAX_TOKENS'])
+        }
+        return Mistral_Vanna(config=config)
+    
+    else:
+        # Если провайдер не поддерживается, возвращаемся к OpenAI
+        current_llm_provider = 'openai'
+        model_name = os.environ.get('OPENAI_MODEL', 'gpt-4o-mini')
+        config = {
+            'api_key': os.environ['OPENAI_API_KEY'],
+            'model': model_name,
+            'temperature': float(os.environ['OPENAI_TEMPERATURE']),
+            'max_tokens': int(os.environ['OPENAI_MAX_TOKENS'])
+        }
+        return OpenAI_Vanna(config=config)
+
+# Инициализируем Vanna с OpenAI по умолчанию
+vn = create_vanna_instance(llm_provider='openai')
 
 # Connect to DuckDB
 try:
@@ -260,6 +427,55 @@ def load_question(id: str, question, sql, df, fig_json, followup_questions):
 @app.route('/api/v0/get_question_history', methods=['GET'])
 def get_question_history():
     return jsonify({"type": "question_history", "questions": cache.get_all(field_list=['question']) })
+
+# Новый API эндпоинт для получения доступных моделей
+@app.route('/api/v0/get_available_models', methods=['GET'])
+def get_available_models():
+    return jsonify({
+        "type": "available_models",
+        "current_provider": current_llm_provider,
+        "current_model": current_llm_model,
+        "models": AVAILABLE_MODELS
+    })
+
+# Новый API эндпоинт для смены модели
+@app.route('/api/v0/change_model', methods=['POST'])
+def change_model():
+    global vn
+    
+    data = flask.request.json
+    provider = data.get('provider')
+    model = data.get('model')
+    
+    if not provider or provider not in AVAILABLE_MODELS:
+        return jsonify({"type": "error", "error": "Invalid provider"})
+    
+    if not model or model not in AVAILABLE_MODELS[provider]:
+        return jsonify({"type": "error", "error": "Invalid model for the selected provider"})
+    
+    try:
+        # Создаем новый экземпляр Vanna с выбранной моделью
+        vn = create_vanna_instance(llm_provider=provider, model=model)
+        
+        # Переподключаемся к базе данных
+        try:
+            db_path = 'data/retail_data.db'
+            vn.connect_to_duckdb(url=db_path, read_only=True)
+        except Exception as e:
+            # В случае ошибки пробуем подключиться в обычном режиме
+            try:
+                vn.connect_to_duckdb(url=db_path)
+            except Exception as e:
+                return jsonify({"type": "error", "error": f"Failed to connect to database: {str(e)}"})
+        
+        return jsonify({
+            "type": "success",
+            "message": f"Successfully changed model to {model} from provider {provider}",
+            "provider": provider,
+            "model": model
+        })
+    except Exception as e:
+        return jsonify({"type": "error", "error": str(e)})
 
 @app.route('/')
 def root():
