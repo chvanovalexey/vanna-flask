@@ -9,14 +9,50 @@ import duckdb
 import time
 from cache import MemoryCache
 import system_prompts  # Импортируем наш модуль с промптами
+import datetime
+import json
+import hashlib
 
 app = Flask(__name__, static_url_path='')
+
+# Функция для сохранения промптов в файлы
+def save_prompt_to_file(messages, question):
+    """
+    Сохраняет промпт в отдельный файл с уникальным именем.
+    
+    Args:
+        messages: Список сообщений, отправляемых в LLM
+        question: Вопрос пользователя
+    
+    Returns:
+        str: Путь к сохраненному файлу
+    """
+    # Создаем директорию для промптов, если она не существует
+    prompts_dir = os.path.join(os.getcwd(), 'saved_prompts')
+    os.makedirs(prompts_dir, exist_ok=True)
+    
+    # Формируем уникальное имя файла на основе времени и хэша вопроса
+    timestamp = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
+    question_hash = hashlib.md5(question.encode()).hexdigest()[:8]
+    filename = f"{timestamp}_{question_hash}.json"
+    filepath = os.path.join(prompts_dir, filename)
+    
+    # Сохраняем промпт в файл в формате JSON
+    with open(filepath, 'w', encoding='utf-8') as f:
+        json.dump({
+            'timestamp': datetime.datetime.now().isoformat(),
+            'question': question,
+            'messages': messages
+        }, f, ensure_ascii=False, indent=2)
+    
+    print(f"Промпт сохранен в файл: {filepath}")
+    return filepath
 
 # SETUP
 cache = MemoryCache()
 # Global variable to store current LLM provider
-current_llm_provider = 'openai'
-current_llm_model = os.environ.get('OPENAI_MODEL', 'gpt-4o-mini')
+current_llm_provider = 'anthropic'
+current_llm_model = os.environ.get('ANTHROPIC_MODEL', 'claude-3-7-sonnet-20250219')
 
 # Setup Vanna with different LLM providers
 from vanna.openai import OpenAI_Chat
@@ -63,6 +99,7 @@ class OpenAI_Vanna(ChromaDB_VectorStore, OpenAI_Chat):
         """
         # Получаем релевантные данные для промпта
         related_ddl = self.get_related_ddl(question, **kwargs)
+        print(related_ddl)
         related_docs = self.get_related_documentation(question, **kwargs)
         related_questions = self.get_similar_question_sql(question, **kwargs)
         
@@ -87,10 +124,32 @@ class OpenAI_Vanna(ChromaDB_VectorStore, OpenAI_Chat):
             question_sql_list=related_data.questions
         )
         
+        # Сохраняем промпт в файл перед отправкой в LLM
+        save_prompt_to_file(messages, question)
+        
         # Отправляем запрос к LLM
         sql = self.submit_prompt(messages)
         
         return sql
+        
+    def generate_plotly_code(self, question, sql, df_metadata, **kwargs):
+        """
+        Переопределяем метод generate_plotly_code для использования нашего системного промпта.
+        """
+        # Формируем промпт для генерации кода Plotly
+        messages = [
+            {"role": "system", "content": system_prompts.PLOTLY_SYSTEM_PROMPT},
+            {"role": "user", "content": f"Question: {question}\n\nSQL Query: {sql}\n\nDataFrame Info: {df_metadata}"}
+        ]
+        
+        # Сохраняем промпт в файл перед отправкой в LLM
+        save_prompt_to_file(messages, f"plotly_{question}")
+        
+        # Отправляем запрос к LLM
+        plotly_code = self.submit_prompt(messages)
+                
+        # Применяем санитизацию и извлечение кода как в оригинальной реализации
+        return self._sanitize_plotly_code(self._extract_python_code(plotly_code))
 
 # Класс для Anthropic, если доступен
 if Anthropic_Chat:
@@ -129,10 +188,33 @@ if Anthropic_Chat:
                 question_sql_list=related_data.questions
             )
             
+            # Сохраняем промпт в файл перед отправкой в LLM
+            save_prompt_to_file(messages, question)
+            
             # Отправляем запрос к LLM
             sql = self.submit_prompt(messages)
             
             return sql
+            
+        def generate_plotly_code(self, question, sql, df_metadata, **kwargs):
+            """
+            Переопределяем метод generate_plotly_code для использования нашего системного промпта.
+            """
+            # Формируем промпт для генерации кода Plotly
+            messages = [
+                {"role": "system", "content": system_prompts.PLOTLY_SYSTEM_PROMPT},
+                {"role": "user", "content": f"Question: {question}\n\nSQL Query: {sql}\n\nDataFrame Info: {df_metadata}"}
+            ]
+            
+            # Сохраняем промпт в файл перед отправкой в LLM
+            save_prompt_to_file(messages, f"plotly_{question}")
+            
+            # Отправляем запрос к LLM
+            plotly_code = self.submit_prompt(messages)
+            # print(plotly_code)
+            
+            # Применяем санитизацию и извлечение кода как в оригинальной реализации
+            return self._sanitize_plotly_code(self._extract_python_code(plotly_code))
 
 # Класс для Mistral, если доступен
 if Mistral_Chat:
@@ -171,10 +253,32 @@ if Mistral_Chat:
                 question_sql_list=related_data.questions
             )
             
+            # Сохраняем промпт в файл перед отправкой в LLM
+            save_prompt_to_file(messages, question)
+            
             # Отправляем запрос к LLM
             sql = self.submit_prompt(messages)
             
             return sql
+            
+        def generate_plotly_code(self, question, sql, df_metadata, **kwargs):
+            """
+            Переопределяем метод generate_plotly_code для использования нашего системного промпта.
+            """
+            # Формируем промпт для генерации кода Plotly
+            messages = [
+                {"role": "system", "content": system_prompts.PLOTLY_SYSTEM_PROMPT},
+                {"role": "user", "content": f"Question: {question}\n\nSQL Query: {sql}\n\nDataFrame Info: {df_metadata}"}
+            ]
+            
+            # Сохраняем промпт в файл перед отправкой в LLM
+            save_prompt_to_file(messages, f"plotly_{question}")
+            
+            # Отправляем запрос к LLM
+            plotly_code = self.submit_prompt(messages)
+            
+            # Применяем санитизацию и извлечение кода как в оригинальной реализации
+            return self._sanitize_plotly_code(self._extract_python_code(plotly_code))
 
 # Функция для создания экземпляра соответствующего класса Vanna
 def create_vanna_instance(llm_provider='openai', model=None):
@@ -230,8 +334,8 @@ def create_vanna_instance(llm_provider='openai', model=None):
         }
         return OpenAI_Vanna(config=config)
 
-# Инициализируем Vanna с OpenAI по умолчанию
-vn = create_vanna_instance(llm_provider='openai')
+# Инициализируем Vanna с Claude (Anthropic) по умолчанию
+vn = create_vanna_instance(llm_provider='anthropic')
 
 # Connect to DuckDB
 try:
